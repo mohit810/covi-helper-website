@@ -6,6 +6,7 @@ import Lottie from 'react-lottie';
 import searchAnimation from '../lottie/49993-search.json';
 import {withRouter} from "react-router";
 import {retry} from "../../helpers/commonFunctions";
+import {Helmet} from "react-helmet";
 const DistrictData= lazy(() => retry(() => import("../DistrictData")));
 
 class District extends React.Component {
@@ -70,21 +71,32 @@ class District extends React.Component {
             }
         }
         return(
-            <div className="h-full flex flex-col min-h-screen">
-                <div className="w-screen">
-                    <header className="bg-white space-x-4" >
-                        <div className="flex flex-wrap px-4 sm:px-6 lg:px-8">
-                            <div className="flex-1 m-1 z-40">
-                                <StateDropdown displayText={"Choose State"} displayData={States} displayState={this.state.selectedState} parentCallback = {this.handleStateCallback}/>
+            <React.Fragment>
+                <Helmet>
+                    <title>
+                        District
+                    </title>
+                    <meta
+                        name="District"
+                        content={`You can view all available resources in a District on this page.`}
+                    />
+                </Helmet>
+                <div className="h-full flex flex-col min-h-screen">
+                    <div className="w-screen">
+                        <header className="bg-white space-x-4" >
+                            <div className="flex flex-wrap px-4 sm:px-6 lg:px-8">
+                                <div className="flex-1 m-1 z-40">
+                                    <StateDropdown displayText={"Choose State"} displayData={States} displayState={this.state.selectedState} parentCallback = {this.handleStateCallback}/>
+                                </div>
+                                <div className="flex-1 m-1 z-30">
+                                    <CityDropdown displayText={"Choose District"} displayData={this.state.shortlistedCities} displayCity={this.state.data} parentCallback = {this.handleCallback}/>
+                                </div>
                             </div>
-                            <div className="flex-1 m-1 z-30">
-                                <CityDropdown displayText={"Choose District"} displayData={this.state.shortlistedCities} displayCity={this.state.data} parentCallback = {this.handleCallback}/>
-                            </div>
-                        </div>
-                    </header>
+                        </header>
+                    </div>
+                    {renderCityDetail(data)}
                 </div>
-                {renderCityDetail(data)}
-            </div>
+            </React.Fragment>
         )
     }
 }

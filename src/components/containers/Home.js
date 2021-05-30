@@ -4,6 +4,7 @@ import useStickySWR from '../../helpers/hooks/useStickySWR';
 import {fetcher, getStatistic, retry} from '../../helpers/commonFunctions';
 import TableLoader from "../loaders/Table";
 import {useLocalStorage, useSessionStorage} from "react-use";
+import {Helmet} from "react-helmet";
 const MapExplorer = lazy(() => retry(() => import('../map/MapExplorer')));
 const StateHeader = lazy(() => retry(() => import('../state/StateHeader')));
 const Minigraphs = lazy(() => retry(() => import('../Minigraphs')));
@@ -46,6 +47,15 @@ export default function Home() {
 
     return(
         <React.Fragment>
+            <Helmet>
+                <title>
+                    Covid-19 Outbreak
+                </title>
+                <meta
+                    name="Home"
+                    content={`Covid-19 Outbreak: Latest Map and Case Count`}
+                />
+            </Helmet>
             <div className="w-auto h-auto">
                 <div className="w-auto flex flex-col md:flex-row">
                     <div className="w-full md:w-6/12 p-2">

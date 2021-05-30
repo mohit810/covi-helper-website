@@ -4,7 +4,7 @@ import {AuthContext} from "../../helpers/Auth";
 import VolunteerCard from "../VolunteerCard";
 import VerifyCard from "../VerifyCard";
 import {noData} from "../../helpers/commonFunctions";
-
+import {Helmet} from "react-helmet";
 
 export default function MasterDashboard() {
     const {currentUser} = useContext(AuthContext)
@@ -233,56 +233,67 @@ export default function MasterDashboard() {
     }
 
     return(
-        <div className="pb-5 min-h-screen h-auto" >
-            <header className="bg-white shadow sticky top-0 z-30">
-                <div className="flex flex-col sm:flex-row max-w-7xl py-3 px-4 sm:px-6 lg:px-8">
-                    <h1 className="flex-none mx-auto my-auto text-3xl font-bold text-gray-900">Master Dashboard</h1>
-                    <button
-                        type="button"
-                        className="flex-none mx-auto my-2 px-5 h-10 justify-center text-sm font-medium text-white bg-green-600 shadow-md border border-transparent rounded-md hover:bg-green-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
-                        onClick={getVolunteers}>
-                        {volunteerBtn}
-                    </button>
-                    <button
-                        type="button"
-                        className="flex-none mx-auto my-2 px-5 h-10 justify-center text-sm font-medium text-white bg-green-600 shadow-md border border-transparent rounded-md hover:bg-green-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
-                        onClick={getResource}>
-                        {resourceBtn}
-                    </button>
-                </div>
-            </header>
-            {!volunteerFlag && !resourceFlag && (
-                <div className="h-screen w-screen grid grid-cols-1 gap-2 place-content-center text-center">
-                    <span className="material-icons text-6xl text-green-600">smart_button</span>
-                    Click on any Button to get the Data
-                </div>
-            )}
-            <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3" >
-                {volunteerFlag && !resourceFlag && (
-                    <Suspense fallback={<div style={{height: '50rem'}} />}>
-                        {volunteerData !== null ? (
-                            volunteerData.map((data) => {
-                                return (
-                                    <div key={data.id}>
-                                        <VolunteerCard volunteerData={data} currentUser={currentUser.email} actionCallback={volunteerCallback}/>
-                                    </div>
-                                )
-                            })
-                        ): (
-                            <>
-                                {noData("sentiment_dissatisfied","It seems there are no Volunteer Registrations!","")}
-                            </>
-                        )}
-                    </Suspense>
+        <React.Fragment>
+            <Helmet>
+                <title>
+                    Master Dashboard
+                </title>
+                <meta
+                    name="Master Dashboard"
+                    content={`You can Verify Resources and Volunteers on this page.`}
+                />
+            </Helmet>
+            <div className="pb-5 min-h-screen h-auto" >
+                <header className="bg-white shadow sticky top-0 z-30">
+                    <div className="flex flex-col sm:flex-row max-w-7xl py-3 px-4 sm:px-6 lg:px-8">
+                        <h1 className="flex-none mx-auto my-auto text-3xl font-bold text-gray-900">Master Dashboard</h1>
+                        <button
+                            type="button"
+                            className="flex-none mx-auto my-2 px-5 h-10 justify-center text-sm font-medium text-white bg-green-600 shadow-md border border-transparent rounded-md hover:bg-green-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                            onClick={getVolunteers}>
+                            {volunteerBtn}
+                        </button>
+                        <button
+                            type="button"
+                            className="flex-none mx-auto my-2 px-5 h-10 justify-center text-sm font-medium text-white bg-green-600 shadow-md border border-transparent rounded-md hover:bg-green-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                            onClick={getResource}>
+                            {resourceBtn}
+                        </button>
+                    </div>
+                </header>
+                {!volunteerFlag && !resourceFlag && (
+                    <div className="h-screen w-screen grid grid-cols-1 gap-2 place-content-center text-center">
+                        <span className="material-icons text-6xl text-green-600">smart_button</span>
+                        Click on any Button to get the Data
+                    </div>
                 )}
+                <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3" >
+                    {volunteerFlag && !resourceFlag && (
+                        <Suspense fallback={<div style={{height: '50rem'}} />}>
+                            {volunteerData !== null ? (
+                                volunteerData.map((data) => {
+                                    return (
+                                        <div key={data.id}>
+                                            <VolunteerCard volunteerData={data} currentUser={currentUser.email} actionCallback={volunteerCallback}/>
+                                        </div>
+                                    )
+                                })
+                            ): (
+                                <>
+                                    {noData("sentiment_dissatisfied","It seems there are no Volunteer Registrations!","")}
+                                </>
+                            )}
+                        </Suspense>
+                    )}
+                </div>
+                <>
+                    {!volunteerFlag && resourceFlag && (
+                        <Suspense fallback={<div style={{height: '50rem'}} />}>
+                            {renderData()}
+                        </Suspense>
+                    )}
+                </>
             </div>
-            <>
-                {!volunteerFlag && resourceFlag && (
-                    <Suspense fallback={<div style={{height: '50rem'}} />}>
-                        {renderData()}
-                    </Suspense>
-                )}
-            </>
-        </div>
+        </React.Fragment>
     )
 }

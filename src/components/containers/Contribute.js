@@ -6,6 +6,7 @@ import ContributionForm from "../ContributionForm";
 import {States} from "../../helpers/States";
 import {COVI_HELPER_API} from "../../helpers/constants";
 import {useForm} from "react-hook-form";
+import {Helmet} from "react-helmet";
 
 export default function Contribute () {
     const {currentUser} = useContext(AuthContext)
@@ -98,6 +99,15 @@ export default function Contribute () {
 
     return(
         <div className="h-full">
+            <Helmet>
+                <title>
+                    Contribute
+                </title>
+                <meta
+                    name="Contribute"
+                    content={`Added Resources or Register for Verifying Volunteer on this page.`}
+                />
+            </Helmet>
             <section className="text-gray-600 body-font">
                 <div className="px-5 py-16">
                     <div className="flex flex-col text-center w-full mb-20">
