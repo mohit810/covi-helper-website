@@ -7,17 +7,25 @@ import useStickySWR from "../helpers/hooks/useStickySWR";
 import {fetcher} from "../helpers/commonFunctions";
 import ResourceCard from "./ResourceCard";
 import Loader from "./loaders/Loader";
+import {Helmet} from "react-helmet";
 
 export default function DistrictData(props) {
     const location = useLocation();
     const [url,setUrl] = useState('')
     const [filter,setFilter] = useState('all')
+    const [cityName,setCityName] = useState('')
+    const [stateName,setStateName] = useState('')
 
     useEffect(()=>{
         if (props.cityDetail == null){
             setUrl(`${COVI_HELPER_API}${location.pathname}`)
+            var temp = location.pathname.split('/')
+            setCityName(temp[3])
+            setStateName(temp[2])
         } else {
             setUrl(`${COVI_HELPER_API}/resource/${props.statedetail.name}/${props.cityDetail.name}/${props.cityDetail.id}`)
+            setCityName(props.cityDetail.name)
+            setStateName(props.statedetail.name)
         }
     },[props.cityDetail,props.statedetail])
 
@@ -183,6 +191,15 @@ export default function DistrictData(props) {
 
     return(
         <div className="districtData">
+            <Helmet>
+                <title>
+                    Resources in {cityName},{stateName}
+                </title>
+                <meta
+                    name="District"
+                    content={`You can view all available resources in available in ${cityName},${stateName}.`}
+                />
+            </Helmet>
             <div className="w-full">
                 <header className="bg-white space-x-4 sticky top-0 mb-3 z-20" style={{boxShadow: "0px 2px rgba(0, 0, 0, 0.1)"}} >
                     <FilterCard cardsData={ContributeCardData} parentCallback={closeModal}/>
