@@ -1,4 +1,10 @@
-import {DATA_API_ROOT, STATE_NAMES} from '../../helpers/constants';
+import {
+    DATA_API_ROOT,
+    MAP_STATISTICS,
+    PRIMARY_STATISTICS,
+    STATE_NAMES, STATISTIC_CONFIGS,
+    UNKNOWN_DISTRICT_KEY
+} from '../../helpers/constants';
 import useIsVisible from '../../helpers/hooks/useIsVisible';
 import {
     fetcher,
@@ -72,30 +78,41 @@ function State() {
         refreshInterval: 100000,
     });
 
-    const toggleShowAllDistricts = () => {
-        setShowAllDistricts(!showAllDistricts);
-    };
+    const stateData = data?.[stateCode];
 
     const handleSort = (districtNameA, districtNameB) => {
-        const districtA = data[stateCode].districts[districtNameA];
-        const districtB = data[stateCode].districts[districtNameB];
+        const districtA = stateData.districts[districtNameA];
+        const districtB = stateData.districts[districtNameB];
         return (
             getStatistic(districtB, 'total', mapStatistic) -
             getStatistic(districtA, 'total', mapStatistic)
         );
     };
 
+    const toggleShowAllDistricts = () => {
+        setShowAllDistricts(!showAllDistricts);
+    };
+
+    /*    const handleSort = (districtNameA, districtNameB) => {
+            const districtA = data[stateCode].districts[districtNameA];
+            const districtB = data[stateCode].districts[districtNameB];
+            return (
+                getStatistic(districtB, 'total', mapStatistic) -
+                getStatistic(districtA, 'total', mapStatistic)
+            );
+        };*/
+
     const gridRowCount = useMemo(() => {
-        if (!data) return;
+        if (!stateData) return;
         const gridColumnCount = window.innerWidth >= 540 ? 3 : 2;
-        const districtCount = data[stateCode]?.districts
-            ? Object.keys(data[stateCode].districts).filter(
+        const districtCount = stateData[stateCode]?.districts
+            ? Object.keys(stateData[stateCode].districts).filter(
                 (districtName) => districtName !== 'Unknown'
             ).length
             : 0;
         const gridRowCount = Math.ceil(districtCount / gridColumnCount);
         return gridRowCount;
-    }, [data, stateCode]);
+    }, [stateData]);
 
     const stateMetaElement = useRef();
     const isStateMetaVisible = useIsVisible(stateMetaElement);
@@ -114,6 +131,40 @@ function State() {
 
     const lookback = showAllDistricts ? (window.innerWidth >= 540 ? 10 : 8) : 6;
 
+    const primaryStatistic = MAP_STATISTICS.includes(mapStatistic)
+        ? mapStatistic
+        : 'confirmed';
+
+    const noDistrictData = useMemo(() => {
+        // Heuristic: All cases are in Unknown
+        return !!(
+            stateData?.districts &&
+            stateData.districts?.[UNKNOWN_DISTRICT_KEY] &&
+            PRIMARY_STATISTICS.every(
+                (statistic) =>
+                    getStatistic(stateData, 'total', statistic) ===
+                    getStatistic(
+                        stateData.districts[UNKNOWN_DISTRICT_KEY],
+                        'total',
+                        statistic
+                    )
+            )
+        );
+    }, [stateData]);
+
+    const statisticConfig = STATISTIC_CONFIGS[primaryStatistic];
+
+    const noRegionHighlightedDistrictData =
+        regionHighlighted?.districtName &&
+        regionHighlighted.districtName !== UNKNOWN_DISTRICT_KEY &&
+        noDistrictData;
+
+    const districts = Object.keys(
+        ((!noDistrictData || !statisticConfig.hasPrimary) &&
+            stateData?.districts) ||
+        {}
+    );
+
     return (
         <>
             <Helmet>
@@ -129,12 +180,12 @@ function State() {
             <div className="w-full flex flex-col  lg:flex-row">
                 <div className="w-full lg:w-6/12 p-4 flex flex-col">
                     <div className="mb-4 " >
-                        <StateHeader data={data?.[stateCode]} stateCode={stateCode}  />
+                        <StateHeader data={stateData} stateCode={stateCode}  />
                     </div>
                     <span ref={stateMetaElement} />
                     <div style={{position: 'relative'}} className="mt-2" >
                         <MapSwitcher {...{mapStatistic, setMapStatistic}} />
-                        <StateLevel data={data?.[stateCode]} />
+                        <StateLevel data={stateData} />
                         <StateMinigraphs
                             timeseries={timeseries?.[stateCode]?.dates}
                             {...{stateCode}}
@@ -143,8 +194,8 @@ function State() {
                     </div>
 
                     <div className="py-3 flex justify-center inline-block">
-                        {data?.[stateCode]?.total?.vaccinated && (
-                            <LevelVaccinated data={data?.[stateCode]}  />
+                        {stateData?.total?.vaccinated1 && (
+                            <LevelVaccinated data={stateData}  />
                         )}
                     </div>
 
@@ -198,12 +249,12 @@ function State() {
                                             .slice(0, showAllDistricts ? undefined : 5)
                                             .map((districtName) => {
                                                 const total = getStatistic(
-                                                    data[stateCode].districts[districtName],
+                                                    stateData.districts[districtName],
                                                     'total',
                                                     mapStatistic
                                                 );
                                                 const delta = getStatistic(
-                                                    data[stateCode].districts[districtName],
+                                                    stateData.districts[districtName],
                                                     'delta',
                                                     mapStatistic
                                                 );

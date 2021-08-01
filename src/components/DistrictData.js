@@ -12,6 +12,7 @@ import {Helmet} from "react-helmet";
 export default function DistrictData(props) {
     const location = useLocation();
     const [url,setUrl] = useState('')
+    const [clipboardURL,setClipboardURL] = useState('')
     const [filter,setFilter] = useState('all')
     const [cityName,setCityName] = useState('')
     const [stateName,setStateName] = useState('')
@@ -19,11 +20,13 @@ export default function DistrictData(props) {
     useEffect(()=>{
         if (props.cityDetail == null){
             setUrl(`${COVI_HELPER_API}${location.pathname}`)
+            setClipboardURL(`http://localhost:3000${location.pathname}`)
             var temp = location.pathname.split('/')
             setCityName(temp[3])
             setStateName(temp[2])
         } else {
             setUrl(`${COVI_HELPER_API}/resource/${props.statedetail.name}/${props.cityDetail.name}/${props.cityDetail.id}`)
+            setClipboardURL(`http://localhost:3000/resource/${props.statedetail.name}/${props.cityDetail.name}/${props.cityDetail.id}`)
             setCityName(props.cityDetail.name)
             setStateName(props.statedetail.name)
         }
@@ -182,7 +185,7 @@ export default function DistrictData(props) {
 
     function copyToClipboard() {
         var textField = document.createElement('textarea')
-        textField.innerText = url.replaceAll(" ","%20")
+        textField.innerText = clipboardURL.replaceAll(" ","%20")
         document.body.appendChild(textField)
         textField.select()
         document.execCommand('copy')

@@ -61,7 +61,22 @@ export const STATISTIC_CONFIGS = {
         definition: {key: 'tested'},
         showDelta: true,
     },
-    vaccinated: {
+    vaccinated1: {
+        displayName: 'vaccinated (at least one dose)',
+        color: '#fb5581',
+        format: 'short',
+        showDelta: true,
+        hideZero: true,
+        category: 'vaccinated',
+    },
+    vaccinated2: {
+        displayName: 'fully vaccinated',
+        color: '#fb5581',
+        format: 'short',
+        showDelta: true,
+        hideZero: true,
+        category: 'vaccinated',
+    },vaccinated: {
         displayName: 'vaccine doses administered',
         color: '#fb5581',
         format: 'short',
@@ -135,7 +150,11 @@ export const PRIMARY_STATISTICS = [
     'deceased',
 ];
 
+export const MAP_STATISTICS = [...PRIMARY_STATISTICS];
+
 export const BRUSH_STATISTICS = ['confirmed'];
+
+export const TESTED_EXPIRING_DAYS = 7;
 
 export const TABLE_STATISTICS = [...PRIMARY_STATISTICS, 'tested', 'vaccinated'];
 

@@ -4,7 +4,7 @@ import {
     LOCALE_SHORTHANDS,
     NAN_STATISTICS,
     PER_MILLION_OPTIONS,
-    STATISTIC_CONFIGS,
+    STATISTIC_CONFIGS, TESTED_EXPIRING_DAYS,
     TESTED_LOOKBACK_DAYS,
 } from './constants';
 
@@ -122,6 +122,104 @@ export const getStatistic = (
     data,
     type,
     statistic,
+    {
+        expiredDate = null,
+        normalizedByPopulationPer = null,
+        movingAverage = false,
+        canBeNaN = false,
+    } = {}
+) => {
+    // TODO: Replace delta with daily to remove ambiguity
+    //       Or add another type for daily/delta
+
+    if (expiredDate !== null) {
+        if (STATISTIC_CONFIGS[statistic]?.category === 'tested') {
+            if (
+                !data?.meta?.tested?.date ||
+                differenceInDays(
+                    parseIndiaDate(expiredDate),
+                    parseIndiaDate(data.meta.tested.date)
+                ) > TESTED_EXPIRING_DAYS
+            ) {
+                return 0;
+            }
+        }
+    }
+
+    let multiplyFactor = 1;
+    if (type === 'delta' && movingAverage) {
+        type = 'delta7';
+        multiplyFactor *= 1 / 7;
+    }
+
+    if (normalizedByPopulationPer === 'million') {
+        multiplyFactor *= 1e6 / data?.meta?.population;
+    } else if (normalizedByPopulationPer === 'lakh') {
+        multiplyFactor *= 1e5 / data?.meta?.population;
+    } else if (normalizedByPopulationPer === 'hundred') {
+        multiplyFactor *= 1e2 / data?.meta?.population;
+    }
+
+    let val;
+    if (statistic === 'active' || statistic === 'activeRatio') {
+        const confirmed = data?.[type]?.confirmed || 0;
+        const deceased = data?.[type]?.deceased || 0;
+        const recovered = data?.[type]?.recovered || 0;
+        const other = data?.[type]?.other || 0;
+        const active = confirmed - deceased - recovered - other;
+        if (statistic === 'active') {
+            val = active;
+        } else if (statistic === 'activeRatio') {
+            val = 100 * (active / confirmed);
+        }
+    } else if (statistic === 'vaccinated') {
+        const dose1 = data?.[type]?.vaccinated1 || 0;
+        const dose2 = data?.[type]?.vaccinated2 || 0;
+        val = dose1 + dose2;
+    } else if (statistic === 'tpr') {
+        const confirmed = data?.[type]?.confirmed || 0;
+        const tested = data?.[type]?.tested || 0;
+        val = 100 * (confirmed / tested);
+    } else if (statistic === 'cfr') {
+        const deceased = data?.[type]?.deceased || 0;
+        const confirmed = data?.[type]?.confirmed || 0;
+        val = 100 * (deceased / confirmed);
+    } else if (statistic === 'recoveryRatio') {
+        const recovered = data?.[type]?.recovered || 0;
+        const confirmed = data?.[type]?.confirmed || 0;
+        val = 100 * (recovered / confirmed);
+    } else if (statistic === 'caseGrowth') {
+        const confirmedDeltaLastWeek = data?.delta7?.confirmed || 0;
+        const confirmedDeltaTwoWeeksAgo = data?.delta21_14?.confirmed || 0;
+        val =
+            type === 'total'
+                ? 100 *
+                ((confirmedDeltaLastWeek - confirmedDeltaTwoWeeksAgo) /
+                    confirmedDeltaTwoWeeksAgo)
+                : 0;
+    } else if (statistic === 'population') {
+        val = type === 'total' ? data?.meta?.population : 0;
+    } else {
+        val = data?.[type]?.[statistic];
+    }
+
+    const statisticConfig = STATISTIC_CONFIGS[statistic];
+    multiplyFactor = (statisticConfig?.nonLinear && 1) || multiplyFactor;
+
+    let result = multiplyFactor * val;
+    if (!canBeNaN) {
+        result = (!isNaN(result) && result) || 0;
+    }
+    if (!statisticConfig?.canBeInfinite) {
+        result = ((isNaN(result) || isFinite(result)) && result) || 0;
+    }
+    return result;
+};
+
+/*export const getStatistic = (
+    data,
+    type,
+    statistic,
     {perMillion = false, movingAverage = false} = {}
 ) => {
     // TODO: Replace delta with daily to remove ambiguity
@@ -171,7 +269,7 @@ export const getStatistic = (
     }
 
     return multiplyFactor * ((isFinite(count) && count) || 0);
-};
+};*/
 
 export const getTableStatistic = (data, statistic, args, lastUpdatedTT) => {
     const statisticDefinition = STATISTIC_CONFIGS[statistic]?.definition;
