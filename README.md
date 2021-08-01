@@ -1,6 +1,7 @@
+
 # Covi-Helper Website
 
-This Website is built using ReactJS as a POC.
+https://user-images.githubusercontent.com/39617209/127767583-be4adeaf-6b33-4fb3-90f6-39b9c0ce8a48.mp4
 
 ## Backend Code
 
